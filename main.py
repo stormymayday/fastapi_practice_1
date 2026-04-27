@@ -47,7 +47,7 @@ def get_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
 def get_posts(db: Annotated[Session, Depends(get_db)]):
     return db.execute(select(Post)).scalars().all()
 
-@app.delete("/posts/{post_id}", response_model=PostRead, status_code=status.HTTP_200_OK)
+@app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
     post = db.execute(select(Post).where(Post.id == post_id)).scalars().first()
     if post is None:
@@ -57,7 +57,3 @@ def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
         )
     db.delete(post)
     db.commit()
-    return {
-        "message": "post deleted",
-        "post": post,
-    }
