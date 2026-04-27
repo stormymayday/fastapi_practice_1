@@ -20,6 +20,10 @@ def health_check():
         "message": "service is running"
     }
 
+@app.get("/posts", response_model=list[PostRead], status_code=status.HTTP_200_OK)
+def get_posts(db: Annotated[Session, Depends(get_db)]):
+    return db.execute(select(Post)).scalars().all()
+
 @app.post("/posts", response_model=PostRead, status_code=status.HTTP_201_CREATED)
 def create_post(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
     new_post = Post(
@@ -41,11 +45,6 @@ def get_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
             detail="post not found"
         )
     return post
-    
-
-@app.get("/posts", response_model=list[PostRead], status_code=status.HTTP_200_OK)
-def get_posts(db: Annotated[Session, Depends(get_db)]):
-    return db.execute(select(Post)).scalars().all()
 
 @app.delete("/posts/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
