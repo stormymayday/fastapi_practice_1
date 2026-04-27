@@ -56,3 +56,18 @@ def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
         )
     db.delete(post)
     db.commit()
+
+@app.patch("/posts/{post_id}", response_model=PostRead, status_code=status.HTTP_200_OK)
+def update_post(post_id: int, updated_post: PostCreate, db: Annotated[Session, Depends(get_db)]):
+    post = db.execute(select(Post).where(Post.id == post_id)).scalar_one_or_none()
+    if post is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="post not found"
+        )
+    post.title = updated_post.title
+    post.content = updated_post.content
+    post.published = updated_post.published
+    db.commit()
+    db.refresh(post)
+    return post
