@@ -47,4 +47,17 @@ def get_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
 def get_posts(db: Annotated[Session, Depends(get_db)]):
     return db.execute(select(Post)).scalars().all()
 
-# Base.metadata.create_all(bind=engine)
+@app.delete("/posts/{post_id}", response_model=PostRead, status_code=status.HTTP_200_OK)
+def delete_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
+    post = db.execute(select(Post).where(Post.id == post_id)).scalars().first()
+    if post is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="post not found"
+        )
+    db.delete(post)
+    db.commit()
+    return {
+        "message": "post deleted",
+        "post": post,
+    }
