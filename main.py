@@ -43,4 +43,8 @@ def get_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
     return post
     
 
+@app.get("/posts", response_model=list[PostRead], status_code=status.HTTP_200_OK)
+def get_posts(db: Annotated[Session, Depends(get_db)]):
+    return db.execute(select(Post))
+
 # Base.metadata.create_all(bind=engine)
