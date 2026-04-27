@@ -24,7 +24,8 @@ def health_check():
 def create_post(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
     new_post = Post(
         title = post.title,
-        content = post.content
+        content = post.content,
+        published = post.published,
     )
     db.add(new_post)
     db.commit()
@@ -33,12 +34,13 @@ def create_post(post: PostCreate, db: Annotated[Session, Depends(get_db)]):
 
 @app.get("/posts/{post_id}", response_model=PostRead, status_code=status.HTTP_200_OK)
 def get_post(post_id: int, db: Annotated[Session, Depends(get_db)]):
-    result = db.execute(select(Post).where(Post.id == post_id))
-    if result:
-        return result
-    raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND,
-        detail="post not found"
-    )
+    post = db.execute(select(Post).where(Post.id == post_id)).scalar_one_or_none()
+    if post is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="post not found"
+        )
+    return post
+    
 
 # Base.metadata.create_all(bind=engine)
